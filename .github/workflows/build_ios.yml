@@ -29,7 +29,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Unsigned iOS Release
-        run: shorebird release ios --no-codesign --no-confirm --force
+        run: shorebird release ios --no-codesign --no-confirm
 
       - name: Package Unsigned IPA
         run: |
