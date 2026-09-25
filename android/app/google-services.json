@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "905177408871",
+    "project_id": "lendrack-513e8",
+    "storage_bucket": "lendrack-513e8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:905177408871:android:3d4497015852aacc8e7bc2",
+        "android_client_info": {
+          "package_name": "com.example.wallet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "905177408871-799faaln5kbo51dvdjcuaoto72b3fl28.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wallet",
+            "certificate_hash": "14ac3b62a5134b1ad1a036a2e8ec0796070f29e5"
+          }
+        },
+        {
+          "client_id": "905177408871-pi1474fadbnt14in3r3u49fmqaldl03v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsEsQz84bkIWGqx9gcUyxVfFWv4J11AZ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "905177408871-pi1474fadbnt14in3r3u49fmqaldl03v.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "905177408871-e9vh83q1kbjq98bcpgjurrkebrfpjdcf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.wallet"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

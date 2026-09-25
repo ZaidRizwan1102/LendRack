@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:wallet/utils/responsive.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
@@ -8,6 +7,7 @@ class Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = Responsive(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: size.widthPerc(100),
       height: size.heightPerc(6.5),
@@ -15,15 +15,18 @@ class Header extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SvgPicture.asset('assets/images/logo.svg', height: size.heightPerc(3.1),),
-          SizedBox(width: size.widthPerc(1.5),),
-          Text("LendRack", style: TextStyle(
-            fontSize: 24, fontWeight: FontWeight.bold
+          Image.asset(
+            isDark
+                ? 'assets/images/logo_dark.png' // Logo for dark mode (e.g., white text)
+                : 'assets/images/logo_light.png',
+            height: size.heightPerc(4.8),
           ),
-          ),
-          Spacer(),
-          IconButton(onPressed: (){},
-              icon: Icon(Icons.notifications_active_outlined)
+          SizedBox(width: size.widthPerc(1.5)),
+          Center(
+            child: Text(
+              "LendRack",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
