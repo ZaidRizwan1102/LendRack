@@ -7,6 +7,9 @@ jobs:
   build-ios:
     runs-on: macos-latest
 
+    env:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -15,17 +18,18 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: Setup Shorebird
         uses: shorebirdtech/setup-shorebird@v1
         with:
-          shorebird-token: ${{ secrets.SHOREBIRD_TOKEN }}
+          cache: true
 
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Build Unsigned IPA
-        run: shorebird release ios --no-codesign
+      - name: Build Unsigned iOS Release
+        run: shorebird release ios --no-codesign --no-confirm
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
