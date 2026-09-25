@@ -5,12 +5,32 @@ import 'package:wallet/services/database_service.dart';
 import 'package:wallet/utils/handler.dart';
 import 'package:wallet/utils/responsive.dart';
 import 'package:wallet/widgets/activity_dismissible.dart';
+import 'package:wallet/widgets/custom_snackbar.dart';
 import 'package:wallet/widgets/record_row.dart';
 
 class PersonRecords extends StatelessWidget {
   final String personName;
 
   const PersonRecords({super.key, required this.personName});
+
+  void _deleteRecord(
+    BuildContext context,
+    ActivityItem item,
+    RecordModel record,
+  ) {
+    // 1. Delete from database using non-null item.id
+    DatabaseService().deleteRecord(item.id);
+
+    // 2. Show CustomSnackBar with Undo action
+    CustomSnackBar.show(
+      context,
+      message: "Record deleted",
+      actionLabel: "Undo",
+      onAction: () {
+        DatabaseService().addRecord(record);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,11 +89,6 @@ class PersonRecords extends StatelessWidget {
                     return _buildEmptyState(context, size);
                   }
 
-                  // Map filtered RecordModels to ActivityItem list
-                  final items = filteredRecords
-                      .map((record) => ActivityItem.fromRecord(record))
-                      .toList();
-
                   return SingleChildScrollView(
                     child: Center(
                       child: Container(
@@ -92,24 +107,21 @@ class PersonRecords extends StatelessWidget {
                           ],
                         ),
                         child: Column(
-                          children: items.asMap().entries.map((entry) {
+                          children: filteredRecords.asMap().entries.map((entry) {
                             final index = entry.key;
-                            final item = entry.value;
-                            final isLast = index == items.length - 1;
+                            final record = entry.value;
+                            final item = ActivityItem.fromRecord(record);
+                            final isLast = index == filteredRecords.length - 1;
 
                             return Column(
                               children: [
                                 ActivityDismissible(
                                   item: item,
-                                  onDelete: () {
-                                    DatabaseService().deleteRecord(item.id);
-                                  },
+                                  onDelete: () => _deleteRecord(context, item, record),
                                   child: RecordRow(
                                     item: item,
                                     onUpdate: (updatedItem) {},
-                                    onDelete: () {
-                                      DatabaseService().deleteRecord(item.id);
-                                    },
+                                    onDelete: () => _deleteRecord(context, item, record),
                                   ),
                                 ),
                                 if (!isLast)

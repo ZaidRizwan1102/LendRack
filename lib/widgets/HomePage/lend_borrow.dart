@@ -114,18 +114,26 @@ class LendBorrow extends StatelessWidget {
                       builder: (context, currentCurrency, _) {
                         return Row(
                           children: [
-                            Text(
-                              CurrencyService.formatAmount(total, targetCurrency: currentCurrency,),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: accentColor,
+                            Expanded(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  CurrencyService.formatAmount(
+                                    total,
+                                    targetCurrency: currentCurrency,
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: accentColor,
+                                  ),
+                                ),
                               ),
                             ),
-                            const Spacer(),
                             IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
                               onPressed: () {
                                 Navigator.push(
                                   context,

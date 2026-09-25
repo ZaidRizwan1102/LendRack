@@ -43,17 +43,13 @@ class DeadlineReminders extends StatelessWidget {
   final List<String> _deadlineUnits = const [
     "Days before",
     "Weeks before",
-    "Hours before",
-    "Minutes before",
-    "Seconds before",
-    "Years before",
+    "Months before",
   ];
 
   final List<String> _noDeadlineUnits = const [
     "Days",
     "Weeks",
     "Months",
-    "Years",
   ];
 
   Future<void> _updateSetting(

@@ -67,15 +67,13 @@ class PersonRuleCard extends StatelessWidget {
   static const List<String> deadlineUnits = [
     "Days before",
     "Weeks before",
-    "Hours before",
-    "Minutes before",
+    "Months before",
   ];
 
   static const List<String> noDeadlineUnits = [
     "Days",
     "Weeks",
     "Months",
-    "Years",
   ];
 
   // Helper method to sync updates to Firestore & reschedule notifications

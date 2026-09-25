@@ -33,7 +33,6 @@ class NotificationService {
         iOS: iosSettings,
       );
 
-      // Compatible with flutter_local_notifications ^22.3.1
       await _notifications.initialize(settings: settings);
       await _requestPermissions();
       _isInitialized = true;
@@ -58,7 +57,7 @@ class NotificationService {
     }
   }
 
-  // Calculate reminder date based on target date, quantity, unit, and whether it's a fixed deadline or periodic check-in
+  // Calculate reminder date limited strictly to Days, Weeks, and Months
   DateTime? _calculateReminderDate(
     DateTime baseDate,
     int number,
@@ -66,36 +65,21 @@ class NotificationService {
     required bool isNoDeadline,
   }) {
     final Duration duration;
+    
     switch (unit) {
-      case "Seconds before":
-      case "Seconds":
-        duration = Duration(seconds: number);
-        break;
-      case "Minutes before":
-      case "Minutes":
-        duration = Duration(minutes: number);
-        break;
-      case "Hours before":
-      case "Hours":
-        duration = Duration(hours: number);
-        break;
-      case "Days before":
-      case "Days":
-        duration = Duration(days: number);
-        break;
       case "Weeks before":
       case "Weeks":
         duration = Duration(days: number * 7);
         break;
+      case "Months before":
       case "Months":
         duration = Duration(days: number * 30);
         break;
-      case "Years before":
-      case "Years":
-        duration = Duration(days: number * 365);
-        break;
+      case "Days before":
+      case "Days":
       default:
         duration = Duration(days: number);
+        break;
     }
 
     // Records with no deadline ADD time to DateTime.now()
@@ -252,7 +236,6 @@ class NotificationService {
     required DateTime scheduledDate,
   }) async {
     try {
-      // Updated zonedSchedule method signature for flutter_local_notifications 22.3.1
       await _notifications.zonedSchedule(
         id: id,
         title: title,
