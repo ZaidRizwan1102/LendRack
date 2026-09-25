@@ -118,15 +118,18 @@ class _SignupState extends State<Signup> {
 
   Future<void> _cleanupUnverifiedUser() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null && !user.emailVerified) {
+    
+    // Only clean up if the account was converted to email AND remains unverified.
+    // Do NOT run this on anonymous guest sessions.
+    if (user != null && !user.isAnonymous && !user.emailVerified) {
       try {
         await user.delete();
       } catch (_) {
         await FirebaseAuth.instance.signOut();
       }
+      // Re-initialize guest auth so a valid anonymous session is restored
+      await AuthService().initializeAuth();
     }
-    // Re-initialize guest auth so currentUser is never null
-    await AuthService().initializeAuth();
   }
 
   @override
@@ -135,65 +138,55 @@ class _SignupState extends State<Signup> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, result) async {
-          if (didPop) return;
-          await _cleanupUnverifiedUser();
-          if (context.mounted) {
-            Navigator.of(context).pop();
-          }
-        },
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Center(
-              child: Column(
-                children: [
-                  Image(
-                    image: AssetImage(
-                      isDark
-                          ? 'assets/images/logo_dark.png'
-                          : 'assets/images/logo_light.png',
-                    ),
-                    height: size.heightPerc(10),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: Center(
+            child: Column(
+              children: [
+                Image(
+                  image: AssetImage(
+                    isDark
+                        ? 'assets/images/logo_dark.png'
+                        : 'assets/images/logo_light.png',
                   ),
-                  const Text(
-                    "Create Account",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                  height: size.heightPerc(10),
+                ),
+                const Text(
+                  "Create Account",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                ),
+                SizedBox(height: size.heightPerc(0.5)),
+                Text(
+                  "Backup your records by creating an account",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
-                  SizedBox(height: size.heightPerc(0.5)),
-                  Text(
-                    "Backup your records by creating an account",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
-                  ),
-                  SizedBox(height: size.heightPerc(2)),
+                ),
+                SizedBox(height: size.heightPerc(2)),
 
-                  SignupInfoContainer(
-                    emailController: _emailController,
-                    usernameController: _usernameController,
-                    passwordController: _passwordController,
-                    confirmPasswordController: _confirmPasswordController,
-                  ),
+                SignupInfoContainer(
+                  emailController: _emailController,
+                  usernameController: _usernameController,
+                  passwordController: _passwordController,
+                  confirmPasswordController: _confirmPasswordController,
+                ),
 
-                  SizedBox(height: size.heightPerc(2)),
+                SizedBox(height: size.heightPerc(2)),
 
-                  _isLoading
-                      ? const CircularProgressIndicator()
-                      : SignupBackButtons(onSignupPressed: _handleSignUp),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : SignupBackButtons(onSignupPressed: _handleSignUp),
 
-                  SizedBox(height: size.heightPerc(1.5)),
-                  const ContinueWith(),
-                  SizedBox(height: size.heightPerc(1)),
-                  const GoogleButton(),
-                  SizedBox(height: size.heightPerc(2)),
-                ],
-              ),
+                SizedBox(height: size.heightPerc(1.5)),
+                const ContinueWith(),
+                SizedBox(height: size.heightPerc(1)),
+                const GoogleButton(),
+                SizedBox(height: size.heightPerc(2)),
+              ],
             ),
           ),
         ),

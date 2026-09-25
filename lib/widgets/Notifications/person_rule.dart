@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:wallet/services/notification_service.dart';
 import 'package:wallet/utils/responsive.dart';
 
 class PersonRuleItem {
@@ -77,7 +78,7 @@ class PersonRuleCard extends StatelessWidget {
     "Years",
   ];
 
-  // Helper method to sync updates to Firestore
+  // Helper method to sync updates to Firestore & reschedule notifications
   Future<void> _updateRuleInFirestore() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null || rule.id.isEmpty) return;
@@ -89,6 +90,9 @@ class PersonRuleCard extends StatelessWidget {
           .collection('person_rules')
           .doc(rule.id)
           .update(rule.toMap());
+
+      // Sync notifications whenever any rule property is changed
+      await NotificationService().syncAllNotifications();
     } catch (e) {
       debugPrint("Error updating person rule: $e");
     }

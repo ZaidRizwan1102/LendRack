@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:wallet/services/notification_service.dart';
 import 'package:wallet/utils/responsive.dart';
 
 class DeadlineReminders extends StatelessWidget {
@@ -74,6 +75,9 @@ class DeadlineReminders extends StatelessWidget {
         },
       }, SetOptions(merge: true));
     }
+
+    // Sync notification schedules after updating global reminder settings
+    await NotificationService().syncAllNotifications();
   }
 
   @override

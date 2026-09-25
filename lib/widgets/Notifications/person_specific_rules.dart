@@ -2,13 +2,13 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:wallet/services/notification_service.dart';
 import 'package:wallet/utils/responsive.dart';
 import 'package:wallet/widgets/Notifications/person_rule.dart';
 
 class PersonSpecificRules extends StatelessWidget {
   const PersonSpecificRules({super.key});
 
-  // Add new rule document to Firestore
   Future<void> _addNewRule() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
@@ -28,12 +28,13 @@ class PersonSpecificRules extends StatelessWidget {
           .doc(userId)
           .collection('person_rules')
           .add(newRule.toMap());
+
+      await NotificationService().syncAllNotifications();
     } catch (e) {
       debugPrint("Error adding person rule: $e");
     }
   }
 
-  // Delete rule document from Firestore
   Future<void> _removeRule(String ruleId) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null || ruleId.isEmpty) return;
@@ -45,9 +46,36 @@ class PersonSpecificRules extends StatelessWidget {
           .collection('person_rules')
           .doc(ruleId)
           .delete();
+
+      await NotificationService().syncAllNotifications();
     } catch (e) {
       debugPrint("Error deleting person rule: $e");
     }
+  }
+
+  String? _extractNameFromDoc(Map<String, dynamic>? data) {
+    if (data == null) return null;
+
+    final possibleKeys = [
+      'personName',
+      'person_name',
+      'person',
+      'name',
+      'contact',
+      'contactName',
+      'borrower',
+      'lender',
+      'party',
+      'title',
+    ];
+
+    for (var key in possibleKeys) {
+      if (data.containsKey(key) && data[key] != null) {
+        final val = data[key].toString().trim();
+        if (val.isNotEmpty) return val;
+      }
+    }
+    return null;
   }
 
   @override
@@ -64,28 +92,28 @@ class PersonSpecificRules extends StatelessWidget {
 
     if (userId == null) return const SizedBox.shrink();
 
-    // Stream 1: Fetch actual people from user transactions
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
-          .collection('transactions')
+          .collection('records')
           .snapshots(),
       builder: (context, txSnapshot) {
         final List<String> availablePeople = [];
+
         if (txSnapshot.hasData && txSnapshot.data != null) {
+          final docs = txSnapshot.data!.docs;
           final Set<String> nameSet = {};
-          for (var doc in txSnapshot.data!.docs) {
+          for (var doc in docs) {
             final data = doc.data() as Map<String, dynamic>?;
-            final personName = (data?['personName'] as String?)?.trim() ?? '';
-            if (personName.isNotEmpty) {
-              nameSet.add(personName);
+            final name = _extractNameFromDoc(data);
+            if (name != null) {
+              nameSet.add(name);
             }
           }
           availablePeople.addAll(nameSet.toList()..sort());
         }
 
-        // Stream 2: Fetch saved person rules from Firestore
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('users')
@@ -142,7 +170,6 @@ class PersonSpecificRules extends StatelessWidget {
 
                   if (rules.isNotEmpty) SizedBox(height: size.heightPerc(1.5)),
 
-                  // Add Rule Button
                   GestureDetector(
                     onTap: _addNewRule,
                     child: CustomPaint(

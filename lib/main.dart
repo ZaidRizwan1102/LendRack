@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wallet/services/auth.dart';
 import 'package:wallet/services/currency_service.dart';
+import 'package:wallet/services/notification_service.dart';
 import 'package:wallet/utils/main_layout.dart';
 import 'firebase_options.dart';
 
@@ -79,6 +80,7 @@ void main() async {
   // 3. Start remote Firestore listener for cloud sync
   setupThemeListener();
   await CurrencyService.loadUserCurrency();
+  await NotificationService().init();
 
   runApp(const MyApp());
 }
