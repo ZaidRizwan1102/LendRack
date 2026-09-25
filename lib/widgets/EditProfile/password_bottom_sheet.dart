@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wallet/utils/responsive.dart';
 import 'package:wallet/widgets/custom_button.dart';
 import 'package:wallet/widgets/custom_input_field.dart';
+import 'package:wallet/widgets/custom_snackbar.dart';
 
 class PasswordBottomSheet extends StatefulWidget {
   final Function(String currentPass, String newPass) onSave;
@@ -38,6 +39,39 @@ class _PasswordBottomSheetState extends State<PasswordBottomSheet> {
     _newPassController.dispose();
     _confirmPassController.dispose();
     super.dispose();
+  }
+
+  void _validateAndSave() {
+    final currentPass = _currentPassController.text.trim();
+    final newPass = _newPassController.text.trim();
+    final confirmPass = _confirmPassController.text.trim();
+
+    if (currentPass.isEmpty || newPass.isEmpty || confirmPass.isEmpty) {
+      CustomSnackBar.show(
+        context,
+        message: "Please fill in all password fields.",
+      );
+      return;
+    }
+
+    if (newPass.length < 6) {
+      CustomSnackBar.show(
+        context,
+        message: "New password must be at least 6 characters.",
+      );
+      return;
+    }
+
+    if (newPass != confirmPass) {
+      CustomSnackBar.show(
+        context,
+        message: "New passwords do not match.",
+      );
+      return;
+    }
+
+    widget.onSave(currentPass, newPass);
+    Navigator.pop(context);
   }
 
   @override
@@ -107,15 +141,7 @@ class _PasswordBottomSheetState extends State<PasswordBottomSheet> {
           SizedBox(height: size.heightPerc(3)),
 
           CustomButton(
-            moveTo: () {
-              if (_newPassController.text == _confirmPassController.text) {
-                widget.onSave(
-                  _currentPassController.text,
-                  _newPassController.text,
-                );
-                Navigator.pop(context);
-              }
-            },
+            moveTo: _validateAndSave,
             buttonText: "Save Changes",
             buttonIcon: null,
             buttonColor: Colors.green.shade600,

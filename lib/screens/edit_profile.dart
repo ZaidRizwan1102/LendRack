@@ -1,9 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wallet/utils/handler.dart';
 import 'package:wallet/utils/responsive.dart';
 import 'package:wallet/widgets/EditProfile/edit_field_bottom_sheet.dart';
 import 'package:wallet/widgets/EditProfile/password_bottom_sheet.dart';
 import 'package:wallet/widgets/custom_button.dart';
+import 'package:wallet/widgets/custom_snackbar.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -13,9 +16,119 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
-  String name = "Alex Johnson";
-  String email = "alex.j@example.com";
+  String name = "";
+  String email = "";
   String password = "••••••••";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    setState(() {
+      // 1. Check local storage first, fallback to Firebase Auth
+      name = prefs.getString('user_name') ?? firebaseUser?.displayName ?? "No Name Set";
+      email = prefs.getString('user_email') ?? firebaseUser?.email ?? "No Email Found";
+    });
+  }
+
+  Future<void> _updateName(String newName) async {
+    final trimmedName = newName.trim();
+    if (trimmedName.isEmpty) {
+      CustomSnackBar.show(context, message: "Name cannot be empty");
+      return;
+    }
+
+    // 1. Save to local storage immediately
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_name', trimmedName);
+
+    setState(() {
+      name = trimmedName;
+    });
+
+    // 2. Backup to Firebase Auth
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.updateDisplayName(trimmedName);
+        await user.reload();
+      }
+      if (mounted) {
+        CustomSnackBar.show(context, message: "Name updated successfully!");
+      }
+    } catch (_) {
+      if (mounted) {
+        CustomSnackBar.show(context, message: "Saved locally!");
+      }
+    }
+  }
+
+  Future<void> _updateEmail(String newEmail) async {
+    final trimmedEmail = newEmail.trim();
+    if (trimmedEmail.isEmpty) {
+      CustomSnackBar.show(context, message: "Email cannot be empty");
+      return;
+    }
+
+    // 1. Save to local storage immediately
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_email', trimmedEmail);
+
+    setState(() {
+      email = trimmedEmail;
+    });
+
+    // 2. Backup to Firebase Auth
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.verifyBeforeUpdateEmail(trimmedEmail);
+      }
+      if (mounted) {
+        CustomSnackBar.show(
+          context,
+          message: "Email updated! Verification link sent.",
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        CustomSnackBar.show(context, message: "Saved locally!");
+      }
+    }
+  }
+
+  Future<void> _updatePassword(String currentPass, String newPass) async {
+    if (currentPass.isEmpty || newPass.isEmpty) {
+      CustomSnackBar.show(context, message: "Fields cannot be empty");
+      return;
+    }
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && user.email != null) {
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: currentPass,
+        );
+        await user.reauthenticateWithCredential(credential);
+        await user.updatePassword(newPass);
+      }
+
+      if (mounted) {
+        CustomSnackBar.show(context, message: "Password updated successfully!");
+      }
+    } catch (e) {
+      if (mounted) {
+        CustomSnackBar.show(context, message: "Failed to update password");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,11 +190,7 @@ class _EditProfileState extends State<EditProfile> {
                             initialValue: name,
                             hintText: "Enter your full name",
                             svgPath: 'assets/images/person.svg',
-                            onSave: (newName) {
-                              if (newName.isNotEmpty) {
-                                setState(() => name = newName);
-                              }
-                            },
+                            onSave: (newName) => _updateName(newName),
                           );
                         },
                       ),
@@ -104,11 +213,7 @@ class _EditProfileState extends State<EditProfile> {
                             initialValue: email,
                             hintText: "Enter email address",
                             svgPath: 'assets/images/email.svg',
-                            onSave: (newEmail) {
-                              if (newEmail.isNotEmpty) {
-                                setState(() => email = newEmail);
-                              }
-                            },
+                            onSave: (newEmail) => _updateEmail(newEmail),
                           );
                         },
                       ),
@@ -127,9 +232,8 @@ class _EditProfileState extends State<EditProfile> {
                         onPressed: () {
                           PasswordBottomSheet.show(
                             context: context,
-                            onSave: (currentPass, newPass) {
-                              // Handle password save
-                            },
+                            onSave: (currentPass, newPass) =>
+                                _updatePassword(currentPass, newPass),
                           );
                         },
                       ),

@@ -53,7 +53,7 @@ class CustomSnackBar {
                 child: Text(
                   actionLabel ?? "Undo",
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall?.color,
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),

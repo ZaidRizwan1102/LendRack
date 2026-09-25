@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wallet/utils/responsive.dart';
 import 'package:wallet/widgets/custom_button.dart';
 import 'package:wallet/widgets/custom_input_field.dart';
+import 'package:wallet/widgets/custom_snackbar.dart';
 
 class EditFieldBottomSheet extends StatefulWidget {
   final String title;
@@ -105,28 +106,35 @@ class _EditFieldBottomSheetState extends State<EditFieldBottomSheet> {
           SizedBox(height: size.heightPerc(3)),
 
           Row(
-            children:[ 
+            children: [ 
               CustomButton(
-              moveTo: () {
-                widget.onSave(_controller.text.trim());
-                Navigator.pop(context);
-              },
-              buttonText: "Save Changes",
-              buttonIcon: null,
-              buttonColor: Colors.green.shade600,
-              width: size.widthPerc(45),
-            ),
-            Spacer(),
-            CustomButton(
-              moveTo: () {
-                widget.onSave(_controller.text.trim());
-                Navigator.pop(context);
-              },
-              buttonText: "Cancel",
-              buttonIcon: null,
-              width: size.widthPerc(45),
-            ),
-            ]
+                moveTo: () {
+                  final textValue = _controller.text.trim();
+                  if (textValue.isEmpty) {
+                    CustomSnackBar.show(
+                      context,
+                      message: "This field cannot be empty.",
+                    );
+                    return;
+                  }
+                  widget.onSave(textValue);
+                  Navigator.pop(context);
+                },
+                buttonText: "Save Changes",
+                buttonIcon: null,
+                buttonColor: Colors.green.shade600,
+                width: size.widthPerc(45),
+              ),
+              const Spacer(),
+              CustomButton(
+                moveTo: () {
+                  Navigator.pop(context);
+                },
+                buttonText: "Cancel",
+                buttonIcon: null,
+                width: size.widthPerc(45),
+              ),
+            ],
           ),
         ],
       ),
